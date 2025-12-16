@@ -79,15 +79,6 @@ body {
     transform-origin: center center;
     pointer-events: none; /* Don't block clicks */
 }
-.ti-arrow-circle-down {
-    color: #fff;
-    font-size: 24px;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    pointer-events: none; /* Don't block clicks */
-}
 
 /* LAYER 3: INFO (Starts invisible) */
 .info-layer {
@@ -116,6 +107,16 @@ body {
 .nav-item.right { text-align: right; }
 
 /* Hero Text */
+.ti-arrow-circle-down {
+    color: #000;
+    font-size: 36px;
+    position: absolute;
+    top: 95%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none; /* Don't block clicks */
+    animation: arrow-bounce 1.6s ease-in-out infinite;
+}
 .logo {
     position: absolute;
     top: 5%;
@@ -191,10 +192,15 @@ body {
 .footer-headline { font-size: 4rem; margin-bottom: 60px; }
 .works-list { display: flex; flex-direction: column; }
 .work-item {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 20px 0; border-bottom: 1px solid #000;
-    text-decoration: none; color: #000;
-    font-size: 2rem; font-weight: 700;
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+    padding: 20px 0;
+     border-bottom: 1px solid #000;
+    text-decoration: none; 
+    color: #000;
+    font-size: 2rem; 
+    font-weight: 700;
 }
 .work-item:first-child { border-top: 1px solid #000; }
 .work-number { font-size: 3rem; margin-right: 20px; width: 50px; }
@@ -211,6 +217,11 @@ body {
 }
 .ti-arrow-top-right:hover {
     transform: scale(2);
+}
+
+@keyframes arrow-bounce {
+    0%, 100% { transform: translate(-50%, -50%) translateY(0); }
+    50% { transform: translate(-50%, -50%) translateY(12px); }
 }
 
 /* Responsive */
