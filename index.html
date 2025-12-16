@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deadly Seigaiha - SDG14</title>
+    <link rel="stylesheet" href="/Layout/themify-icons/themify-icons.css">
+     <style type="text/css">
+		/* when @font-face is defined(it is in font.css) you can add the font to any rule by using font-family */
+		h1 {
+			font-family: 'CircularStdBold';
+		}
+		</style>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="animation-container">
+        
+        <div class="sticky-viewport">
+            
+            <div id="hero-layer" class="layer hero-layer">
+                <header class="top-bar">
+                    <div class="nav-item">School of Communication and Design</div>
+                    <div class="nav-item center">RMIT University Vietnam</div>
+                    <div class="nav-item right">November 21st, 2025</div>
+                </header>
+
+                <div class="hero-content">
+                    <div class="logo">
+                        <img src="logo.png" alt="Logo" width="500">
+                    </div>
+                    <h1 class="main-headline">
+                        Don’t litter the <br>
+                        <span class="highlight-red">ocean</span>. Protect the <br>
+                        lives living under it.
+                    </h1>
+                    <div class="text-grid">
+                        <div class="text-col">
+                            <p>Marine biologist Sylvia Earle’s quote, “No water, no life. No blue, no green,” perfectly captures what UN Sustainable Development Goal 14 - Life Below Water is all about. Every living thing on Earth is connected to the ocean. The “blue” of the sea gives life to the “green” of the land, without healthy oceans, there would be no balance, no food, and no future for people or the planet. </p>
+                        </div>
+                        <div class="text-col">
+                            <p>Yet, our oceans are struggling under the weight of pollution, overfishing, and climate change. Earle’s message is a wake-up call for everyone: Don’t litter the ocean. Protect the lives living under it. If we take care of the ocean, it will continue to take care of us.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="expanding-circle" class="red-circle">
+                <!-- <i class="ti-arrow-circle-down"></i> -->
+            </div>
+
+            <div id="info-layer" class="layer info-layer">
+                <div class="info-container">
+                    <h2 class="info-headline">
+                        <span class="text-white">Deadly</span> <span class="text-black">Seigaiha</span>
+                    </h2>
+
+                    <h3 class="info-subhead">
+                        SDG14 | Life Below Water-Conserve and <br>
+                        sustainably use the oceans, seas and marine resources for sustainable development.
+                    </h3>
+
+                    <div class="concept-block">
+                        <h4>Concept</h4>
+                        <p>We draw inspiration from the circle - the elemental shape that forms every bubble. This simple geometry echoes breath, life cycles, and the underwater world. It is the smallest unit of form that compose everything on the planet yet the biggest form that the galaxy resembles.</p>
+                    </div>
+
+                    <div class="middle-text-block">
+                        <p>I take great inspiration from ocean and Japanese wave pattern - Seigaiha. In this case, there are all normal waves but some of dangered ones showing what is pouring in the ocean - chemicals, oil, fertilizers.</p>
+                    </div>
+
+                    <div class="bottom-text-grid">
+                        <div class="left-desc">
+                            <p>Seigaiha pattern represents peacefulness and long-lasting life. From that, I want to show such contrast of human destruction to highlight the unhealthy and dangerous, urgent situation of the globe in modern life. Make use of the red color to add storytelling and provoke thoughts from observer to artpiece.</p>
+                            <p class="mt-4">Beautiful ocean is what gives us life, we need to protect it.</p>
+                        </div>
+                        <div class="right-credit">
+                            <p><strong>Bottle of water</strong><br>Nguyen Dinh Duy Khai</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="footer-section">
+        <div class="footer-container">
+            <h2 class="footer-headline">Explore <span class="highlight-red">other</span> works</h2>
+            <div class="works-list">
+                <a href="#" class="work-item">
+                    <span class="work-number">2</span>
+                    <span class="work-title">Encircled - Cao Khai</span>
+                    <i class="ti-arrow-top-right"></i>
+                </a>
+                <a href="#" class="work-item">
+                    <span class="work-number">3</span>
+                    <span class="work-title">When the water breaks - KyoYoon</span>
+                 <i class="ti-arrow-top-right"></i>
+                    
+                </a>
+
+                 <a href="#" class="work-item">
+                    <span class="work-number">4</span>
+                    <span class="work-title">Spread Out - Ho Hoang</span>
+                    <i class="ti-arrow-top-right"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        const container = document.querySelector('.animation-container');
+        const circle = document.getElementById('expanding-circle');
+        const heroLayer = document.getElementById('hero-layer');
+        const infoLayer = document.getElementById('info-layer');
+
+        window.addEventListener('scroll', () => {
+            const rect = container.getBoundingClientRect();
+            const viewportHeight = window.innerHeight;
+            
+            // Calculate how far we are into the animation container
+            // We want animation to start at 0 and end before the container leaves view
+            const scrollStart = 0;
+            const scrollEnd = rect.height - viewportHeight;
+            let progress = -rect.top / scrollEnd;
+
+            // Clamp progress between 0 and 1
+            if (progress < 0) progress = 0;
+            if (progress > 1) progress = 1;
+
+            // --- ANIMATION LOGIC ---
+
+            // 1. CIRCLE SCALE (Expands 0% to 70% of scroll)
+            // It needs to go huge to cover corners.
+            const maxScale = 100; 
+            let scaleProgress = progress / 0.7; 
+            if (scaleProgress > 1) scaleProgress = 1;
+            // Ease-in effect for scale
+            const scale = 1 + (scaleProgress * scaleProgress * maxScale);
+            circle.style.transform = `scale(${scale})`;
+
+            // 2. HERO FADE OUT (Starts fading at 10%, gone by 50%)
+            let heroOpacity = 1 - ((progress - 0.1) / 0.4);
+            if (heroOpacity < 0) heroOpacity = 0;
+            if (heroOpacity > 1) heroOpacity = 1;
+            heroLayer.style.opacity = heroOpacity;
+
+            // 3. INFO FADE IN (Starts appearing at 40%, full by 80%)
+            // This overlap (Hero fades out 10-50, Info fades in 40-80) creates the smooth blend
+            let infoOpacity = (progress - 0.4) / 0.4;
+            if (infoOpacity < 0) infoOpacity = 0;
+            if (infoOpacity > 1) infoOpacity = 1;
+            infoLayer.style.opacity = infoOpacity;
+            
+            // Optional: Slight translateY on Info layer for "rising" effect
+            const moveUp = (1 - infoOpacity) * 50; // Moves up 50px as it fades in
+            infoLayer.style.transform = `translateY(${moveUp}px)`;
+        });
+    </script>
+</body>
+</html>
