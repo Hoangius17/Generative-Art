@@ -2,97 +2,138 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 @font-face {
-	font-family: 'CircularStdBold';
-	src: local('CircularStdBold'), url('./CircularStdBold.woff') format('woff');
+    font-family: 'CircularStdBold';
+    src: local('CircularStdBold'), url('./CircularStdBold.woff') format('woff');
 }
-/* use this class to attach this font to any element i.e. <p class="fontsforweb_fontid_79748">Text with this font applied</p> */
 .fontsforweb_fontid_79748 {
-	font-family: 'CircularStdBold', sans-serif !important;
+    font-family: 'CircularStdBold', sans-serif !important;
 }
-
 
 body {
     font-family: 'CircularStdBold', sans-serif !important;
     line-height: 1.4;
     color: #000;
-    background-color: #f4f4f4;
+    background-color: #000;
 }
-
-/* UTILITIES */
-.highlight-red { color: #e62429; }
-.text-white { color: #ffffff; }
-.text-black { color: #000000; }
-.mt-4 { margin-top: 1.5rem; }
 
 /* =========================================
-   ANIMATION CONTAINER SETUP
+   PART 1: CANVAS HERO SECTION
    ========================================= */
-/* Total height determines how "long" the scroll feels */
-.animation-container {
-    height: 350vh; 
+#canvas-section {
+    width: 100%;
+    height: 100vh;
     position: relative;
-    background-color: #f4f4f4;
+    overflow: hidden;
 }
 
-/* The viewport that stays fixed while you scroll */
+#canvas-section canvas {
+    position: absolute !important;
+    top: 0;
+    left: 0;
+    z-index: 1; 
+    display: block;
+}
+
+/* Responsive Logo: Use Width percentage or clamp */
+.logo { 
+    position: absolute; 
+    top: 20px; 
+    right: 20px; 
+    z-index: 2; 
+}
+.logo img {
+    width: 150px; /* Default */
+    height: auto;
+}
+
+/* =========================================
+   PART 2: ANIMATION CONTAINER
+   ========================================= */
+.animation-container {
+    height: 800vh; 
+    position: relative;
+    z-index: 9; 
+    background-color: #f4f4f4; 
+}
+
 .sticky-viewport {
     position: sticky;
     top: 0;
     height: 100vh;
     width: 100%;
     overflow: hidden;
-    /* This allows elements to stack on top of each other */
 }
 
-/* Layers common styles */
 .layer {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    padding: 40px;
-    display: flex;
-    flex-direction: column;
-    transition: opacity 0.1s linear; /* Small transition smoothing */
+    padding: 0; 
 }
 
-/* LAYER 1: HERO (Starts visible) */
 .hero-layer {
     z-index: 10;
-    background-color: transparent; /* Transparent so we see background */
-    pointer-events: none; /* Let clicks pass through if needed, or set auto */
+    padding: 40px; 
+    pointer-events: none; 
 }
-/* Re-enable pointer events for links/text selection */
 .hero-layer * { pointer-events: auto; }
 
-/* LAYER 2: RED CIRCLE */
 .red-circle {
     width: 100px;
     height: 100px;
-    background-color: #e62429;
+    background-color: #DC1E28;
     border-radius: 50%;
     position: absolute;
     bottom: 40px;
     right: 40px;
     z-index: 20;
     transform-origin: center center;
-    pointer-events: none; /* Don't block clicks */
+    pointer-events: none; 
 }
 
-/* LAYER 3: INFO (Starts invisible) */
 .info-layer {
     z-index: 30;
-    opacity: 0; /* Hidden initially */
-    /* Background must be transparent so we see the red circle behind it */
-    background-color: transparent; 
+    opacity: 0; 
+    background-color: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
+/* UTILITIES */
+.highlight-red { color: #DC1E28; }
+.text-white { color: #ffffff; }
+.text-black { color: #000000; }
+.mt-4 { margin-top: 1.5rem; }
 
-/* =========================================
-   CONTENT STYLING (Same as before)
-   ========================================= */
-/* Top Bar */
+/* SEQUENCE LAYOUT */
+.info-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.text-sequence-part {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.8); 
+    opacity: 0; 
+    width: 80%; 
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    will-change: transform, opacity;
+}
+
+/* CONTENT STYLING */
 .top-bar {
     display: flex;
     justify-content: space-between;
@@ -106,126 +147,172 @@ body {
 .nav-item.center { text-align: center; }
 .nav-item.right { text-align: right; }
 
-/* Hero Text */
 .ti-arrow-circle-down {
     color: #000;
     font-size: 36px;
     position: absolute;
-    top: 95%;
+    top: 90%; /* Moved up slightly */
     left: 50%;
     transform: translate(-50%, -50%);
-    pointer-events: none; /* Don't block clicks */
+    pointer-events: none;
     animation: arrow-bounce 1.6s ease-in-out infinite;
 }
-.logo {
-    position: absolute;
-    top: 5%;
-    left: 70%;
+
+.hero-content { 
+    margin-top: 60px; 
+    flex-grow: 1; 
 }
-.hero-content { margin-top: 60px; flex-grow: 1; }
+
+/* Responsive Headline using Clamp */
 .main-headline {
-    font-size: 7rem;
+    font-size: clamp(3rem, 8vw, 8rem); 
     font-weight: 700;
     line-height: 0.9;
     letter-spacing: -2px;
-    margin-bottom: 120px;
+    padding-top: 40px;
+    margin-bottom: 30px;
 }
+
+.author-headline {
+    font-size: clamp(1.2rem, 3vw, 2rem);
+    font-weight: 500;
+    font-style: italic;
+    padding-top: 0px;
+    /* Removed padding-left: 1000px which broke mobile */
+    text-align: right; 
+    margin-top: 20px;
+    width: 100%;
+    padding-right: 10%;
+}
+
 .text-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 40px;
-    font-size: 1.5rem;
+    font-size: clamp(1rem, 2vw, 1.8rem); /* Responsive font */
     font-weight: 500;
     max-width: 100%;
+    padding-top: 150px;
 }
 
-/* Info Text */
+/* Info Section Headlines */
 .info-headline {
-    font-size: 15rem;
-    text-align: center;
+    font-size: clamp(4rem, 15vw, 10rem);
     line-height: 1;
     font-weight: 700;
-    margin-bottom: 30px;
-    letter-spacing: -1px;
-    margin-top: 20px;
+    margin-bottom: 20px;
+    letter-spacing: -2px;
 }
+
 .info-subhead {
-    font-size: 1.5rem;
+    font-size: clamp(1rem, 3vw, 2rem);
     font-weight: 700;
-    margin-bottom: 60px;
-    margin-left: 36px;
-    max-width: 600px;
+    max-width: 800px;
 }
 
-.concept-block{
-    margin-left: 100px;
+/* Concept Block Text Sizes */
+.concept-block h4,
+.middle-text-block h4,
+.left-desc h4 { 
+    font-size: clamp(2rem, 6vw, 4rem); 
+    margin-bottom: 30px; 
+    color: #fff; 
 }
-.concept-block h4 { 
-    font-size: 1.8rem;
-     margin-bottom: 10px; 
-     color: #fff; 
-    
-    }
-.concept-block p { font-weight: 600; 
-    max-width: 600px; 
+
+.concept-block p,
+.middle-text-block p,
+.left-desc p { 
+    font-size: clamp(1.2rem, 4vw, 2.5rem); 
+    font-weight: 600; 
+    max-width: 900px; 
     color: #000; 
-    margin-bottom: 40px; 
-    }
-.middle-text-block {
-    max-width: 500px;
-    margin-left: auto; margin-right: 80px;
-    margin-bottom: 40px; font-weight: 700;
+    line-height: 1.2;
 }
-.bottom-text-grid { display: flex; justify-content: space-between; margin-top: 20px; }
-.left-desc { max-width: 50%; font-weight: 600; font-size: 0.9rem;}
-.right-credit { text-align: right; align-self: flex-end; }
 
+.bottom-text-grid { 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    gap: 40px; 
+}
 
-/* Footer Styling */
 .footer-section {
     min-height: 60vh;
-    background-color: #f4f4f4; /* Back to white/grey */
+    background-color: #f4f4f4; 
     padding: 80px 40px;
     position: relative;
-    z-index: 40; /* Above everything else */
+    z-index: 40;
+    opacity: 0;
+    transform: translateY(50px);
+    transition: opacity 1s ease, transform 1s ease;
 }
-.footer-headline { font-size: 4rem; margin-bottom: 60px; }
+.footer-section.visible { opacity: 1; transform: translateY(0); }
+
+.footer-headline { 
+    font-size: clamp(2.5rem, 6vw, 4rem); 
+    margin-bottom: 60px; 
+}
 .works-list { display: flex; flex-direction: column; }
 .work-item {
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center;
-    padding: 20px 0;
-     border-bottom: 1px solid #000;
-    text-decoration: none; 
-    color: #000;
-    font-size: 2rem; 
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 20px 0; border-bottom: 1px solid #000;
+    text-decoration: none; color: #000; 
+    font-size: clamp(1.2rem, 3vw, 2rem); 
     font-weight: 700;
 }
 .work-item:first-child { border-top: 1px solid #000; }
-.work-number { font-size: 3rem; margin-right: 20px; width: 50px; }
-.work-arrow {
-    font-size: 2rem; border: 1px solid #000; border-radius: 50%;
-    width: 50px; height: 50px;
-    display: flex; align-items: center; justify-content: center;
-}
-.ti-arrow-top-right {
-    font-size: 2rem;
-    margin-right: 12px;
-    transition: transform 0.2s ease-in-out;
-
-}
-.ti-arrow-top-right:hover {
-    transform: scale(2);
-}
+.work-number { font-size: clamp(1.5rem, 4vw, 3rem); margin-right: 20px; width: 50px; }
+.ti-arrow-top-right { font-size: 2rem; margin-right: 12px; transition: transform 0.2s ease-in-out; }
+.ti-arrow-top-right:hover { transform: scale(2); }
 
 @keyframes arrow-bounce {
     0%, 100% { transform: translate(-50%, -50%) translateY(0); }
     50% { transform: translate(-50%, -50%) translateY(12px); }
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-    .main-headline, .info-headline { font-size: 3.5rem; }
-    .text-grid, .bottom-text-grid { grid-template-columns: 1fr; flex-direction: column; gap: 20px; }
+/* =========================================
+   MEDIA QUERIES (TABLET & MOBILE)
+   ========================================= */
+
+/* Tablet and below */
+@media screen and (max-width: 1024px) {
+    .main-headline { padding-top: 20px; }
+    .text-grid { padding-top: 80px; gap: 30px; }
+    .red-circle { width: 80px; height: 80px; }
+}
+
+/* Mobile */
+@media screen and (max-width: 768px) {
+    /* Hero Adjustments */
+    .hero-layer { padding: 20px; }
+    .hero-content { margin-top: 40px; }
+    
+    /* Stack the text grid vertically */
+    .text-grid {
+        grid-template-columns: 1fr;
+        padding-top: 40px;
+        gap: 20px;
+    }
+
+    /* Top Nav: Stack or shrink */
+    .top-bar {
+        font-size: 0.65rem;
+        flex-wrap: wrap;
+    }
+    
+    /* Adjust Red Circle position */
+    .red-circle {
+        width: 60px;
+        height: 60px;
+        bottom: 20px;
+        right: 20px;
+    }
+
+    /* Logo adjustment */
+    .logo { top: 15px; right: 15px; }
+    .logo img { width: 100px; }
+
+    /* Footer adjustments */
+    .footer-section { padding: 40px 20px; }
+    .footer-headline { margin-bottom: 30px; }
 }
