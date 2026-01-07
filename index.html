@@ -2,19 +2,28 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.11.11/lib/p5.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.11.11/lib/addons/p5.sound.min.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Deadly Seigaiha - SDG14</title>
-    <link rel="stylesheet" href="themify-icons.css">
-     <style type="text/css">
-		/* when @font-face is defined(it is in font.css) you can add the font to any rule by using font-family */
-		h1 {
-			font-family: 'CircularStdBold';
-		}
-		</style>
-
+    <title>Waste Ripples - SDG14</title>
+    <link rel="stylesheet" href="themify-icons/themify-icons.css">
+    <style type="text/css">
+		h1 { font-family: 'CircularStdBold'; }
+	</style>
     <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="logo.png">
 </head>
 <body>
+
+    <div id="canvas-section">
+           <div class="logo">
+                        <img src="logo.png" alt="Logo" width="200">
+                    </div>
+        <main>
+        </main>
+    </div>
+
+    <script src="sketch.js"></script>
 
     <div class="animation-container">
         
@@ -29,58 +38,59 @@
 
                 <div class="hero-content">
                     <i class="ti-arrow-circle-down"></i>
-                    <div class="logo">
-                        <img src="logo.png" alt="Logo" width="500">
-                    </div>
+                 
                     <h1 class="main-headline">
-                        Don’t litter the <br>
-                        <span class="highlight-red">ocean</span>. Protect the <br>
-                        lives living under it.
+                        No <span class="highlight-red">water</span>, no life.<br>No <span class="highlight-red">blue</span>, no green.<br>
                     </h1>
+                    <h2 class="author-headline">
+                        Sylvia Earle
+                    </h2>
                     <div class="text-grid">
                         <div class="text-col">
-                            <p>Marine biologist Sylvia Earle’s quote, “No water, no life. No blue, no green,” perfectly captures what UN Sustainable Development Goal 14 - Life Below Water is all about. Every living thing on Earth is connected to the ocean. The “blue” of the sea gives life to the “green” of the land, without healthy oceans, there would be no balance, no food, and no future for people or the planet. </p>
+                            <p>Marine biologist Sylvia Earle’s quote, “No water, no life. No blue, no green,” perfectly captures what UN Sustainable Development Goal 14 - Life Below Water is all about. Every living thing on Earth is connected to the ocean.</p>
                         </div>
                         <div class="text-col">
-                            <p>Yet, our oceans are struggling under the weight of pollution, overfishing, and climate change. Earle’s message is a wake-up call for everyone: Don’t litter the ocean. Protect the lives living under it. If we take care of the ocean, it will continue to take care of us.</p>
+                            <p>Yet, our oceans are struggling under the weight of pollution, overfishing, and climate change. Earle’s message is a wake-up call for everyone: <span class="highlight-red">Don’t litter the ocean.</span></p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div id="expanding-circle" class="red-circle">
-                
-            </div>
+            <div id="expanding-circle" class="red-circle"></div>
 
             <div id="info-layer" class="layer info-layer">
                 <div class="info-container">
-                    <h2 class="info-headline">
-                        <span class="text-white">Deadly</span> <span class="text-black">Seigaiha</span>
-                    </h2>
+                    
+                    <div id="part-1" class="text-sequence-part">
+                        <h2 class="info-headline">
+                            <span class="text-white">Waste</span> <br> <span class="text-black">Ripples</span>
+                        </h2>
+                        <h3 class="info-subhead">
+                            SDG14 | Life Below Water
+                        </h3>
+                    </div>
 
-                    <h3 class="info-subhead">
-                        SDG14 | Life Below Water-Conserve and <br>
-                        sustainably use the oceans, seas and marine resources for sustainable development.
-                    </h3>
-
-                    <div class="concept-block">
+                    <div id="part-2" class="text-sequence-part concept-block">
                         <h4>Concept</h4>
-                        <p>We draw inspiration from the circle - the elemental shape that forms every bubble. This simple geometry echoes breath, life cycles, and the underwater world. It is the smallest unit of form that compose everything on the planet yet the biggest form that the galaxy resembles.</p>
+                        <p>We draw inspiration from the circle and its ordered arrangement into a ripple shape, using outlines with no fill. It represents the negative impact of human activity on the ocean - specifically littering. The ocean surface creates small wave frequencies as the aftermath of these actions.</p>
                     </div>
 
-                    <div class="middle-text-block">
-                        <p>I take great inspiration from ocean and Japanese wave pattern - Seigaiha. In this case, there are all normal waves but some of dangered ones showing what is pouring in the ocean - chemicals, oil, fertilizers.</p>
+                    <div id="part-3" class="text-sequence-part middle-text-block">
+                        <h4>Concept</h4>
+                        <p>My work takes inspiration of wastewater discharge pipes and their impact on marine life. This can gradually destroy marine ecosystems and biodiversity for a long time.</p>
                     </div>
 
-                    <div class="bottom-text-grid">
+                    <div id="part-4" class="text-sequence-part bottom-text-grid">
                         <div class="left-desc">
-                            <p>Seigaiha pattern represents peacefulness and long-lasting life. From that, I want to show such contrast of human destruction to highlight the unhealthy and dangerous, urgent situation of the globe in modern life. Make use of the red color to add storytelling and provoke thoughts from observer to artpiece.</p>
+                            <h4>Concept</h4>
+                            <p>When users interact with the installation, they create ripples that symbolize the impact of waste on marine life. Through that, I want to raise awareness about the importance of protecting our oceans.</p>
                             <p class="mt-4">Beautiful ocean is what gives us life, we need to protect it.</p>
                         </div>
                         <div class="right-credit">
-                            <p><strong>Bottle of water</strong><br>Nguyen Dinh Duy Khai</p>
+                            <p><strong>Bottle of water</strong><br>Ho Quoc Hoang</p>
                         </div>
                     </div>
+
                 </div>
             </div>
         </div>
@@ -92,75 +102,124 @@
             <div class="works-list">
                 <a href="#" class="work-item">
                     <span class="work-number">2</span>
-                    <span class="work-title">Encircled - Cao Khai</span>
+                    <span class="work-title">Silent Ocean - Cao Khai</span>
                     <i class="ti-arrow-top-right"></i>
                 </a>
                 <a href="#" class="work-item">
                     <span class="work-number">3</span>
-                    <span class="work-title">When the water breaks - KyoYoon</span>
+                    <span class="work-title">Predicted Wound - KyoYoon</span>
                  <i class="ti-arrow-top-right"></i>
-                    
                 </a>
-
                  <a href="#" class="work-item">
                     <span class="work-number">4</span>
-                    <span class="work-title">Spread Out - Ho Hoang</span>
+                    <span class="work-title">Deadly Seigaiha - Duy Khai</span>
                     <i class="ti-arrow-top-right"></i>
                 </a>
             </div>
         </div>
     </section>
 
-    <script>
+
+
+    <script>   
+     document.addEventListener('DOMContentLoaded', () => {
+     // ... (Keep your existing JS animation code here) ...
         const container = document.querySelector('.animation-container');
         const circle = document.getElementById('expanding-circle');
         const heroLayer = document.getElementById('hero-layer');
         const infoLayer = document.getElementById('info-layer');
 
+        const part1 = document.getElementById('part-1');
+        const part2 = document.getElementById('part-2');
+        const part3 = document.getElementById('part-3');
+        const part4 = document.getElementById('part-4');
+
+        function animateSequence(element, progress, start, end, isLast = false) {
+            const duration = end - start;
+            const midPoint = start + (duration * 0.2); 
+            const exitPoint = end - (duration * 0.2); 
+
+            let opacity = 0;
+            let scale = 0.8;
+
+            if (progress < start) {
+                opacity = 0;
+                scale = 0.8;
+            } else if (progress >= start && progress <= end) {
+                const localProgress = (progress - start) / duration;
+                scale = 0.8 + (localProgress * 0.3);
+
+                if (progress < midPoint) {
+                    opacity = (progress - start) / (midPoint - start);
+                } else if (progress > exitPoint && !isLast) {
+                    opacity = 1 - ((progress - exitPoint) / (end - exitPoint));
+                } else {
+                    opacity = 1;
+                }
+            } else {
+                opacity = isLast ? 1 : 0; 
+                scale = isLast ? 1.1 : 1.2;
+            }
+
+            element.style.opacity = opacity;
+            element.style.transform = `translate(-50%, -50%) scale(${scale})`;
+        }
+
         window.addEventListener('scroll', () => {
             const rect = container.getBoundingClientRect();
             const viewportHeight = window.innerHeight;
             
-            // Calculate how far we are into the animation container
-            // We want animation to start at 0 and end before the container leaves view
-            const scrollStart = 0;
             const scrollEnd = rect.height - viewportHeight;
+            // Note: We need to adjust calculation because container is no longer at top of page
+            // Logic: animation starts when container hits top of viewport
             let progress = -rect.top / scrollEnd;
 
-            // Clamp progress between 0 and 1
+            if (rect.top > window.innerHeight) {
+        heroLayer.style.display = 'none';
+        circle.style.display = 'none';
+        return; // Dừng hàm, không tính toán tiếp
+    } else {
+        heroLayer.style.display = 'block';
+        circle.style.display = 'block';
+    }
+
             if (progress < 0) progress = 0;
             if (progress > 1) progress = 1;
 
-            // --- ANIMATION LOGIC ---
-
-            // 1. CIRCLE SCALE (Expands 0% to 70% of scroll)
-            // It needs to go huge to cover corners.
             const maxScale = 100; 
-            let scaleProgress = progress / 0.7; 
+            let scaleProgress = progress / 0.15; 
             if (scaleProgress > 1) scaleProgress = 1;
-            // Ease-in effect for scale
-            const scale = 1 + (scaleProgress * scaleProgress * maxScale);
-            circle.style.transform = `scale(${scale})`;
+            const circleScale = 1 + (scaleProgress * scaleProgress * maxScale);
+            circle.style.transform = `scale(${circleScale})`;
 
-            // 2. HERO FADE OUT (Starts fading at 10%, gone by 50%)
-            let heroOpacity = 1 - ((progress - 0.1) / 0.4);
+            let heroOpacity = 1 - (progress / 0.1);
             if (heroOpacity < 0) heroOpacity = 0;
-            if (heroOpacity > 1) heroOpacity = 1;
             heroLayer.style.opacity = heroOpacity;
 
-            // 3. INFO FADE IN (Starts appearing at 40%, full by 80%)
-            // This overlap (Hero fades out 10-50, Info fades in 40-80) creates the smooth blend
-            let infoOpacity = (progress - 0.4) / 0.4;
-            if (infoOpacity < 0) infoOpacity = 0;
-            if (infoOpacity > 1) infoOpacity = 1;
-            infoLayer.style.opacity = infoOpacity;
-            
-            // Optional: Slight translateY on Info layer for "rising" effect
-            const moveUp = (1 - infoOpacity) * 50; // Moves up 50px as it fades in
-            infoLayer.style.transform = `translateY(${moveUp}px)`;
+            let containerOpacity = (progress - 0.1) / 0.05;
+            if (containerOpacity < 0) containerOpacity = 0;
+            if (containerOpacity > 1) containerOpacity = 1;
+            infoLayer.style.opacity = containerOpacity;
+
+            animateSequence(part1, progress, 0.15, 0.35);
+            animateSequence(part2, progress, 0.35, 0.55);
+            animateSequence(part3, progress, 0.55, 0.75);
+            animateSequence(part4, progress, 0.75, 1.0, true);
+        });
+
+        const footer = document.querySelector('.footer-section');
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    footer.classList.add('visible');
+                }
+            });
+        }, {
+            threshold: 0.1
+        });
+        observer.observe(footer);
         });
     </script>
 </body>
 </html>
-
-
