@@ -1,63 +1,346 @@
 let ripples = [];
 let particles = [];
+let dust = [];
 let angle = 0;
-let orbitRadius; // Removed hardcoded 300
+// orbitRadius is now calculated dynamically in setup/windowResized
+let orbitRadius; 
 let maxDiameter;
+let centerRotationSpeed = 0.005;
 
 // Sounds
-let bubblesMove;
-let ambientSound;
-let interactionSound;
-let heartbeatSound;
-let buttonSound;
+let bubblesMove, ambientSound, interactionSound, heartbeatSound, buttonSound;
 
 // UI State
 let isMuted = false;
+const btnSize = 40,
+  btnY = 20,
+  btnSoundX = 20,
+  btnInfoX = 70;
+let flashIntensity = 0;
 
-// Buttons
-const btnSize = 40;
-const btnY = 20; 
-const btnSoundX = 20; 
-const btnInfoX = 70; 
-
-// SOUNDS PRELOAD
 function preload() {
-  // Ensure your file paths are correct relative to index.html
-  bubblesMove = loadSound("./bubbles_edited.wav");
-  ambientSound = loadSound("./ambient_mixing_sound.wav");
-  interactionSound = loadSound("./interaction_sound_2_edited.wav");
-  heartbeatSound = loadSound("./heartbeat_edited.wav");
-  buttonSound = loadSound("./interaction_edited.wav");
+  bubblesMove = loadSound("bubbles_edited.wav");
+  ambientSound = loadSound("ambient_mixing_sound.wav");
+  interactionSound = loadSound("interaction_sound_2_edited.wav");
+  heartbeatSound = loadSound("heartbeat_edited.wav");
+  buttonSound = loadSound("interaction_edited.wav");
 }
 
 function setup() {
-  // 1. Create canvas based on window size
+  // --- OPTIMIZATION 1: GPU LOAD ---
+  pixelDensity(1);
+  
+  // Create canvas attached to the specific HTML section
   let cnv = createCanvas(windowWidth, windowHeight);
   cnv.parent("canvas-section");
+
   angleMode(RADIANS);
-  pixelDensity(1);
   textFont("Arial");
-  
-  // 2. Calculate sizes initially
+
+  // Calculate dimensions based on initial window size
   calculateDimensions();
+
+  // INIT PARTICLES
+  for (let i = 0; i < 120; i++) {
+    particles.push(new FloatingBubble());
+  }
+  // INIT DUST
+  for (let i = 0; i < 150; i++) {
+    dust.push(new SpaceDust());
+  }
 }
 
+// --- NEW FUNCTION: HANDLES RESIZING ---
 function windowResized() {
-  // 3. Resize canvas and recalculate sizes when window changes
   resizeCanvas(windowWidth, windowHeight);
   calculateDimensions();
 }
 
+// --- NEW FUNCTION: CENTRALIZES SIZE LOGIC ---
 function calculateDimensions() {
   maxDiameter = sqrt(sq(width) + sq(height));
-  // Responsive orbit radius: approx 30% of the smaller screen dimension
-  orbitRadius = min(width, height) * 0.3; 
+  
+  // Make the orbit responsive:
+  // On Desktop (e.g. 1920x1080): 1080 * 0.3 = 324 (close to your original 300)
+  // On Mobile (e.g. 375x667): 375 * 0.35 = ~131 (fits nicely on screen)
+  // We clamp it so it doesn't get too small or too massive
+  let minDim = min(width, height);
+  orbitRadius = constrain(minDim * 0.35, 120, 350); 
 }
 
 function mousePressed() {
-  userStartAudio(); 
+  userStartAudio();
+  handleUIInteraction();
+}
 
-  // ... (Keep existing mousePressed logic unchanged) ...
+function draw() {
+  if (frameCount % 60 === 0 && heartbeatSound?.isLoaded() && !isMuted) {
+    heartbeatSound.play();
+    heartbeatSound.setVolume(0.8);
+  }
+
+  // Clear background with trail effect
+  background(0, 100);
+
+  push();
+  // Always translate to the current center of the window
+  translate(width / 2, height / 2);
+
+  drawOrbitTracks();
+
+  // Draw Dust
+  noStroke();
+  for (let d of dust) {
+    d.update();
+    d.display();
+  }
+
+  // --- DRAW CENTER & LINES ---
+  push();
+  drawingContext.shadowBlur = 20;
+  drawingContext.shadowColor = color(255, 0, 0, 150 + flashIntensity);
+  drawCenterHub();
+  drawDynamicLines();
+  pop();
+
+  manageRipples();
+
+  // --- UPDATE PARTICLES ---
+  for (let p of particles) {
+    p.checkRippleCollision(ripples);
+    p.update();
+    p.display();
+  }
+
+  if (flashIntensity > 0) flashIntensity -= 8;
+  flashIntensity = constrain(flashIntensity, 0, 255);
+
+  angle += centerRotationSpeed;
+
+  // Rotation speed logic
+  // Check if mouse is in the bottom area (avoiding UI top area)
+  let targetSpeed = mouseIsPressed && mouseY > 100 ? 0.02 : 0.005;
+  centerRotationSpeed = lerp(centerRotationSpeed, targetSpeed, 0.1);
+
+  pop();
+  drawUI();
+}
+
+// ==========================================
+//             CLASSES & FUNCTIONS
+// ==========================================
+
+class SpaceDust {
+  constructor() {
+    this.pos = p5.Vector.random2D().mult(random(maxDiameter / 2));
+    this.vel = p5.Vector.random2D().mult(random(0.1, 0.3));
+    this.size = random(1, 2);
+    this.alpha = random(50, 150);
+  }
+  update() {
+    this.pos.add(this.vel);
+    // Boundary check using responsive maxDiameter
+    if (this.pos.mag() > maxDiameter / 2) this.pos.mult(-0.9);
+  }
+  display() {
+    fill(255, this.alpha);
+    circle(this.pos.x, this.pos.y, this.size);
+  }
+}
+
+function drawDynamicLines() {
+  let numLines = 24;
+
+  let r = 255;
+  let g = constrain(255 - flashIntensity * 2, 0, 255);
+  let b = constrain(255 - flashIntensity * 2, 0, 255);
+
+  noFill();
+  stroke(r, g, b, 100);
+  strokeWeight(2);
+  // Uses dynamic orbitRadius
+  circle(0, 0, orbitRadius * 2);
+
+  let breathe = sin(frameCount * 0.05) * 20;
+  // Dynamic length based on responsive orbitRadius
+  let currentLen = orbitRadius + 40 + breathe + flashIntensity * 0.2;
+  let twoPiDivNum = TWO_PI / numLines;
+
+  for (let i = 0; i < numLines; i++) {
+    let currentAngle = angle + twoPiDivNum * i;
+    let breatheLocal = sin(frameCount * 0.05 + i) * 20;
+    
+    // Calculate length relative to responsive orbitRadius
+    let localLen = orbitRadius + 40 + breatheLocal + flashIntensity * 0.2;
+
+    let ca = cos(currentAngle);
+    let sa = sin(currentAngle);
+
+    // Start slightly outside the center hub (fixed 60 is fine as hub is fixed size)
+    let xStart = ca * 60;
+    let xEnd = ca * localLen;
+    let yStart = sa * 60;
+    let yEnd = sa * localLen;
+
+    stroke(r, g, b, 200);
+    strokeWeight(2);
+    line(xStart, yStart, xEnd, yEnd);
+
+    noStroke();
+    fill(r, g, b, 255);
+    circle(xEnd, yEnd, 4);
+  }
+}
+
+function drawCenterHub() {
+  let centerCol = color(255, 255 - flashIntensity, 255 - flashIntensity);
+
+  noFill();
+  stroke(centerCol, 200);
+  strokeWeight(2);
+  circle(0, 0, 110);
+
+  stroke(centerCol, 150);
+  strokeWeight(5);
+  circle(0, 0, 50);
+
+  noStroke();
+  fill(255, 0, 0, 200 + flashIntensity);
+  circle(0, 0, 15);
+}
+
+class FloatingBubble {
+  constructor() {
+    let ang = random(TWO_PI);
+    // Ensure bubbles spawn within screen limits
+    let spawnLimit = maxDiameter / 1.6;
+    let rad = random(120, spawnLimit);
+    this.pos = createVector(cos(ang) * rad, sin(ang) * rad);
+    this.vel = p5.Vector.random2D().mult(random(0.2, 0.8));
+    this.size = random(5, 20);
+    this.baseAlpha = random(50, 200);
+    this.hitTimer = 0;
+  }
+
+  update() {
+    this.pos.add(this.vel);
+
+    // RESPONSIVE BOUNDARY (BOUNCE)
+    // Updates automatically as width/height changes
+    let halfW = width * 0.5 - this.size;
+    let halfH = height * 0.5 - this.size;
+
+    if (this.pos.x > halfW) {
+      this.pos.x = halfW;
+      this.vel.x *= -1;
+    } else if (this.pos.x < -halfW) {
+      this.pos.x = -halfW;
+      this.vel.x *= -1;
+    }
+
+    if (this.pos.y > halfH) {
+      this.pos.y = halfH;
+      this.vel.y *= -1;
+    } else if (this.pos.y < -halfH) {
+      this.pos.y = -halfH;
+      this.vel.y *= -1;
+    }
+
+    if (this.hitTimer > 0) this.hitTimer -= 2;
+  }
+
+  checkRippleCollision(ripplesArr) {
+    if (ripplesArr.length === 0) return;
+
+    let dFromCenter = this.pos.mag();
+
+    for (let r of ripplesArr) {
+      let rippleRadius = r.radius;
+      if (abs(dFromCenter - rippleRadius) < this.size / 2 + r.w + 5) {
+        this.hitTimer = 90;
+      }
+    }
+  }
+
+  display() {
+    if (this.hitTimer > 0) {
+      fill(255, 0, 0, 100);
+      circle(this.pos.x, this.pos.y, this.size * 2);
+      fill(255, 0, 0);
+    } else {
+      fill(255, this.baseAlpha);
+    }
+    noStroke();
+    circle(this.pos.x, this.pos.y, this.size);
+  }
+}
+
+function manageRipples() {
+  let spawnRate = 60;
+  let speed = 8;
+  // UI Hover check
+  let isHoverUI = mouseX < 150 && mouseY < 100;
+
+  if (mouseIsPressed && !isHoverUI) {
+    spawnRate = 12;
+    speed = 12;
+  }
+  if (frameCount % spawnRate === 0) ripples.push(new Ripple(speed));
+
+  for (let i = ripples.length - 1; i >= 0; i--) {
+    let rip = ripples[i];
+    rip.update();
+    rip.display();
+
+    // Trigger flash when ripple hits the orbit radius
+    if (!rip.hasHit && rip.radius >= orbitRadius) {
+      flashIntensity = 255;
+      rip.hasHit = true;
+    }
+    if (rip.isFinished()) ripples.splice(i, 1);
+  }
+}
+
+function drawOrbitTracks() {
+  noFill();
+  strokeWeight(1);
+  stroke(255, 15);
+  // Scale tracks based on orbitRadius logic to maintain proportions
+  let scaleFactor = orbitRadius / 300; 
+  
+  for (let layer = 1; layer <= 8; layer++) {
+    // Adjusted formulation to scale with the main orbit
+    let radius = (layer * 45 + 50) * 3.5 * scaleFactor;
+    circle(0, 0, radius);
+  }
+}
+
+class Ripple {
+  constructor(s) {
+    this.d = 50;
+    this.radius = 25;
+    this.s = s;
+    this.w = s > 10 ? 5 : 2;
+    this.hasHit = false;
+    this.a = 255;
+  }
+  update() {
+    this.d += this.s;
+    this.radius = this.d / 2;
+    this.a = map(this.d, orbitRadius, maxDiameter * 0.9, 255, 0, true);
+  }
+  display() {
+    noFill();
+    stroke(255, this.a);
+    strokeWeight(this.w);
+    circle(0, 0, this.d);
+  }
+  isFinished() {
+    return this.a <= 0;
+  }
+}
+
+function handleUIInteraction() {
   if (
     mouseX > btnSoundX &&
     mouseX < btnSoundX + btnSize &&
@@ -78,17 +361,15 @@ function mousePressed() {
       interactionSound.setVolume(0.8);
       heartbeatSound.setVolume(0.8);
     }
-    return; 
+    return;
   }
- 
   if (
     mouseX > btnInfoX &&
     mouseX < btnInfoX + btnSize &&
     mouseY > btnY &&
     mouseY < btnY + btnSize
-  ) {
+  )
     return;
-  }
 
   if (!isMuted) {
     if (bubblesMove?.isLoaded() && !bubblesMove.isPlaying()) {
@@ -106,287 +387,76 @@ function mousePressed() {
   }
 }
 
-let flashIntensity = 0;
-
-function draw() {
- 
-  if (frameCount % 60 === 0 && heartbeatSound?.isLoaded() && !isMuted) {
-    heartbeatSound.play();
-    heartbeatSound.setVolume(0.8);
-  }
-
-  background(0, 90);
-
-  push();
-  translate(width / 2, height / 2);
-
-  drawOrbitTracks();
-  drawCenterHub();
-  manageRipples(); 
-
-  for (let i = particles.length - 1; i >= 0; i--) {
-    particles[i].update();
-    particles[i].display();
-    if (particles[i].isFinished()) {
-      particles.splice(i, 1);
-    }
-  }
-
-  drawFixedCircles();
-
-  if (flashIntensity > 0) flashIntensity -= 5;
-  flashIntensity = constrain(flashIntensity, 0, 255);
-
-  angle += 0.01;
-  pop();
-
-  drawUI();
-}
-
-// ... (Keep existing drawUI function unchanged) ...
 function drawUI() {
-    push();
-    noStroke();
-    let isHoverSound =
-      mouseX > btnSoundX &&
-      mouseX < btnSoundX + btnSize &&
-      mouseY > btnY &&
-      mouseY < btnY + btnSize;
-    fill(isHoverSound ? 100 : 50, 200); 
-    rect(btnSoundX, btnY, btnSize, btnSize, 8); 
-  
-  
-    fill(255);
-    if (isMuted) {
-      textAlign(CENTER, CENTER);
-      textSize(10);
-      text("MUTE", btnSoundX + btnSize / 2, btnY + btnSize / 2);
-      stroke(255, 0, 0);
-      strokeWeight(2);
-      line(btnSoundX + 5, btnY + 5, btnSoundX + btnSize - 5, btnY + btnSize - 5); 
-    } else {
-  
-      noStroke();
-      beginShape();
-      vertex(btnSoundX + 10, btnY + 14);
-      vertex(btnSoundX + 18, btnY + 14);
-      vertex(btnSoundX + 28, btnY + 8);
-      vertex(btnSoundX + 28, btnY + 32);
-      vertex(btnSoundX + 18, btnY + 26);
-      vertex(btnSoundX + 10, btnY + 26);
-      endShape(CLOSE);
-    }
-  
-   
-    noStroke();
-    let isHoverInfo =
-      mouseX > btnInfoX &&
-      mouseX < btnInfoX + btnSize &&
-      mouseY > btnY &&
-      mouseY < btnY + btnSize;
-    fill(isHoverInfo ? 100 : 50, 200);
-    rect(btnInfoX, btnY, btnSize, btnSize, 8);
-  
-  
-    fill(255);
+  push();
+  noStroke();
+  let isHoverSound =
+    mouseX > btnSoundX &&
+    mouseX < btnSoundX + btnSize &&
+    mouseY > btnY &&
+    mouseY < btnY + btnSize;
+  fill(isHoverSound ? 80 : 40, 200);
+  rect(btnSoundX, btnY, btnSize, btnSize, 8);
+  fill(255);
+  if (isMuted) {
     textAlign(CENTER, CENTER);
-    textSize(20);
-    textStyle(BOLD);
-    text("i", btnInfoX + btnSize / 2, btnY + btnSize / 2);
-  
-   
-    if (isHoverInfo) {
-      let tooltipX = mouseX + 15; 
-      let tooltipY = mouseY + 15;
-      
-      // Responsive tooltip check: if too close to right edge, draw to the left
-      if (tooltipX + 220 > width) {
-          tooltipX = mouseX - 235;
-      }
-
-      let boxW = 220;
-      let boxH = 90;
-  
-      fill(0, 220);
-      stroke(255, 100);
-      strokeWeight(1);
-      rect(tooltipX, tooltipY, boxW, boxH, 5);
-  
-      noStroke();
-      fill(255);
-      textAlign(LEFT, TOP);
-      textSize(12);
-      textStyle(NORMAL);
-      text("GUIDELINE:", tooltipX + 10, tooltipY + 10);
-  
-      textSize(11);
-      fill(200);
-      textLeading(18);
-      text(
-        "- Click and Hold the mouse: create ripples.",
-        tooltipX + 10,
-        tooltipY + 30
-      );
-    }
-  
-    pop();
-  }
-
-// ... (Keep existing Particle and Ripple classes unchanged) ...
-// ... (Keep createExplosion unchanged) ...
-function createExplosion(x, y) {
-    let numParticles = 12;
-    for (let i = 0; i < numParticles; i++) {
-      particles.push(new Particle(x, y));
-    }
-  }
-  
-  // Class
-  class Particle {
-    constructor(x, y) {
-      this.pos = createVector(x, y);
-      this.vel = p5.Vector.random2D().mult(random(3, 7));
-      this.lifespan = 255;
-      this.size = random(5, 9);
-      this.drag = 0.95;
-    }
-  
-    update() {
-      this.vel.mult(this.drag);
-      this.pos.add(this.vel);
-      this.lifespan -= 3;
-    }
-  
-    display() {
-      push();
-      noStroke();
-      fill(220, 30, 40, this.lifespan);
-      circle(this.pos.x, this.pos.y, this.size);
-      pop();
-    }
-  
-    isFinished() {
-      return this.lifespan < 0;
-    }
-  }
-  class Ripple {
-    constructor(s) {
-      this.d = 0;
-      this.s = s;
-      this.w = s > 10 ? 5 : 2;
-      this.hasHit = false;
-      this.a = 255;
-    }
-    update() {
-      this.d += this.s;
-      this.a = map(this.d, orbitRadius, maxDiameter * 1.1, 255, 0, true);
-    }
-    display() {
-      noFill();
-      stroke(255, this.a);
-      strokeWeight(this.w);
-      circle(0, 0, this.d);
-    }
-    isFinished() {
-      return this.a <= 0;
-    }
-  }
-
-function drawFixedCircles() {
-  let numCircles = 5;
-  let r = constrain(220 + flashIntensity, 0, 255);
-  let g = constrain(30 + flashIntensity, 0, 200);
-  let b = constrain(40 + flashIntensity, 0, 200);
-
-  noFill();
-  stroke(r, g, b);
-  strokeWeight(4);
-  circle(0, 0, orbitRadius * 2);
-
-  for (let i = 0; i < numCircles; i++) {
-    let currentAngle = angle + (TWO_PI / numCircles) * i;
-    let x = cos(currentAngle) * orbitRadius;
-    let y = sin(currentAngle) * orbitRadius;
-    
-    // Scale extension lines relative to orbitRadius
-    let xExt = cos(currentAngle) * (orbitRadius + (orbitRadius * 0.5)); 
-    let yExt = sin(currentAngle) * (orbitRadius + (orbitRadius * 0.5));
-
-    stroke(255, 180 + flashIntensity);
-    strokeWeight(4);
-    line(0, 0, xExt, yExt);
-
-    noFill();
-    stroke(r, g, b);
-    strokeWeight(3);
-    // Scale the outer circles relative to orbitRadius
-    circle(x, y, orbitRadius * 0.66); 
-
-    noFill();
-    stroke(255);
+    textSize(10);
+    text("MUTE", btnSoundX + btnSize / 2, btnY + btnSize / 2);
+    stroke(255, 0, 0);
     strokeWeight(2);
-    circle(x, y, 12);
+    line(btnSoundX + 5, btnY + 5, btnSoundX + btnSize - 5, btnY + btnSize - 5);
+  } else {
+    noStroke();
+    beginShape();
+    vertex(btnSoundX + 10, btnY + 14);
+    vertex(btnSoundX + 18, btnY + 14);
+    vertex(btnSoundX + 28, btnY + 8);
+    vertex(btnSoundX + 28, btnY + 32);
+    vertex(btnSoundX + 18, btnY + 26);
+    vertex(btnSoundX + 10, btnY + 26);
+    endShape(CLOSE);
   }
-}
+  noStroke();
+  let isHoverInfo =
+    mouseX > btnInfoX &&
+    mouseX < btnInfoX + btnSize &&
+    mouseY > btnY &&
+    mouseY < btnY + btnSize;
+  fill(isHoverInfo ? 80 : 40, 200);
+  rect(btnInfoX, btnY, btnSize, btnSize, 8);
+  fill(255);
+  textAlign(CENTER, CENTER);
+  textSize(20);
+  textStyle(BOLD);
+  text("i", btnInfoX + btnSize / 2, btnY + btnSize / 2);
 
-// ... (Keep manageRipples logic almost same, ensure hit detection uses new orbitRadius) ...
-function manageRipples() {
-    let spawnRate = 60;
-    let speed = 10;
-  
-   
-    let isHoverUI = mouseX < 150 && mouseY < 100;
-  
-    if (mouseIsPressed && !isHoverUI) {
-      spawnRate = 15;
-      speed = 10;
+  if (isHoverInfo) {
+    let tooltipX = mouseX + 15;
+    let tooltipY = mouseY + 15;
+    
+    // Ensure tooltip doesn't go off screen on mobile
+    if (tooltipX + 220 > width) {
+        tooltipX = width - 230;
     }
-  
-    if (frameCount % spawnRate === 0) ripples.push(new Ripple(speed));
-  
-    for (let i = ripples.length - 1; i >= 0; i--) {
-      let rip = ripples[i];
-      rip.update();
-      rip.display();
-  
-      if (!rip.hasHit && rip.d / 2 >= orbitRadius) {
-        flashIntensity = 150;
-        rip.hasHit = true;
-        let numCircles = 5;
-        for (let j = 0; j < numCircles; j++) {
-          let pAngle = angle + (TWO_PI / numCircles) * j;
-          let px = cos(pAngle) * orbitRadius;
-          let py = sin(pAngle) * orbitRadius;
-          createExplosion(px, py);
-        }
-      }
-      if (rip.isFinished()) ripples.splice(i, 1);
-    }
-  }
-
-function drawOrbitTracks() {
-  noFill();
-  strokeWeight(1);
-  stroke(255, 30);
-  for (let layer = 1; layer <= 10; layer++) {
-    // Make tracks relative to orbitRadius
-    circle(0, 0, (layer * (orbitRadius/10) + 20) * 2);
-  }
-}
-
-// ... (Keep drawCenterHub unchanged) ...
-function drawCenterHub() {
-    noFill();
-    stroke(255);
-    strokeWeight(1);
-    circle(0, 0, 10);
+    
+    fill(20, 240);
     stroke(255, 100);
-    circle(0, 0, 40);
-    push();
-    rotate(-angle * 2);
-    for (let i = 0; i < 8; i++) {
-      rotate(TWO_PI / 8);
-      line(10, 0, 15, 0);
-    }
-    pop();
+    strokeWeight(1);
+    rect(tooltipX, tooltipY, 220, 90, 5);
+    noStroke();
+    fill(255);
+    textAlign(LEFT, TOP);
+    textSize(12);
+    textStyle(NORMAL);
+    text("GUIDELINE:", tooltipX + 10, tooltipY + 10);
+    textSize(11);
+    fill(200);
+    textLeading(18);
+    text(
+      "- Click and Hold: create ripples.\n- Ripples hit particles -> RED.",
+      tooltipX + 10,
+      tooltipY + 30
+    );
   }
+  pop();
+}
