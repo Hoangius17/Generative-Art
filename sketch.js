@@ -2,14 +2,14 @@ let ripples = [];
 let particles = [];
 let dust = [];
 let angle = 0;
-// orbitRadius is now calculated dynamically in setup/windowResized
+
 let orbitRadius; 
 let maxDiameter;
 let centerRotationSpeed = 0.005;
 
 // Sounds
 let bubblesMove, ambientSound, interactionSound, heartbeatSound, buttonSound;
-
+let factory_sound_1, factory_sound_2, factory_sound_3, bassSound;
 // UI State
 let isMuted = false;
 const btnSize = 40,
@@ -24,6 +24,10 @@ function preload() {
   interactionSound = loadSound("interaction_sound_2_edited.wav");
   heartbeatSound = loadSound("heartbeat_edited.wav");
   buttonSound = loadSound("interaction_edited.wav");
+  factory_sound_1 = loadSound("factory_sound_1.wav");
+  factory_sound_2 = loadSound("factory_sound_2.wav");
+  factory_sound_3 = loadSound("factory_sound_3.wav");
+  bassSound = loadSound("bass.wav");
 }
 
 function setup() {
@@ -48,6 +52,15 @@ function setup() {
   for (let i = 0; i < 150; i++) {
     dust.push(new SpaceDust());
   }
+
+  factory_sound_1.setVolume(0.2);
+  factory_sound_2.setVolume(0.1);
+  factory_sound_3.setVolume(0.2);
+  bassSound.setVolume(0.3);
+  factory_sound_1.loop();
+  factory_sound_2.loop();
+  factory_sound_3.loop();
+  bassSound.loop();
 }
 
 // --- NEW FUNCTION: HANDLES RESIZING ---
@@ -59,11 +72,6 @@ function windowResized() {
 // --- NEW FUNCTION: CENTRALIZES SIZE LOGIC ---
 function calculateDimensions() {
   maxDiameter = sqrt(sq(width) + sq(height));
-  
-  // Make the orbit responsive:
-  // On Desktop (e.g. 1920x1080): 1080 * 0.3 = 324 (close to your original 300)
-  // On Mobile (e.g. 375x667): 375 * 0.35 = ~131 (fits nicely on screen)
-  // We clamp it so it doesn't get too small or too massive
   let minDim = min(width, height);
   orbitRadius = constrain(minDim * 0.35, 120, 350); 
 }
