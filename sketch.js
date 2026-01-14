@@ -3,13 +3,14 @@ let particles = [];
 let dust = [];
 let angle = 0;
 
-let orbitRadius; 
+let orbitRadius;
 let maxDiameter;
 let centerRotationSpeed = 0.005;
 
 // Sounds
 let bubblesMove, ambientSound, interactionSound, heartbeatSound, buttonSound;
 let factory_sound_1, factory_sound_2, factory_sound_3, bassSound;
+
 // UI State
 let isMuted = false;
 const btnSize = 40,
@@ -31,24 +32,20 @@ function preload() {
 }
 
 function setup() {
-  // --- OPTIMIZATION 1: GPU LOAD ---
   pixelDensity(1);
-  
-  // Create canvas attached to the specific HTML section
+
   let cnv = createCanvas(windowWidth, windowHeight);
   cnv.parent("canvas-section");
 
   angleMode(RADIANS);
   textFont("Arial");
-
-  // Calculate dimensions based on initial window size
   calculateDimensions();
 
-  // INIT PARTICLES
+  // Create Orbiting Bubbles
   for (let i = 0; i < 120; i++) {
-    particles.push(new FloatingBubble());
+    particles.push(new OrbitingBubble());
   }
-  // INIT DUST
+  
   for (let i = 0; i < 150; i++) {
     dust.push(new SpaceDust());
   }
@@ -63,13 +60,11 @@ function setup() {
   bassSound.loop();
 }
 
-// --- NEW FUNCTION: HANDLES RESIZING ---
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
   calculateDimensions();
 }
 
-// --- NEW FUNCTION: CENTRALIZES SIZE LOGIC ---
 function calculateDimensions() {
   maxDiameter = sqrt(sq(width) + sq(height));
   let minDim = min(width, height);
@@ -86,15 +81,15 @@ function draw() {
     heartbeatSound.play();
     heartbeatSound.setVolume(0.8);
   }
-
-  // Clear background with trail effect
-  background(0, 100);
+  
+  // Dark background with trails
+  background(0, 80);
 
   push();
-  // Always translate to the current center of the window
+
   translate(width / 2, height / 2);
 
-  drawOrbitTracks();
+  drawConcentricTracks();
 
   // Draw Dust
   noStroke();
@@ -105,10 +100,11 @@ function draw() {
 
   // --- DRAW CENTER & LINES ---
   push();
+  // Red Glow
   drawingContext.shadowBlur = 20;
   drawingContext.shadowColor = color(255, 0, 0, 150 + flashIntensity);
   drawCenterHub();
-  drawDynamicLines();
+  drawRadarLines();
   pop();
 
   manageRipples();
@@ -126,8 +122,7 @@ function draw() {
   angle += centerRotationSpeed;
 
   // Rotation speed logic
-  // Check if mouse is in the bottom area (avoiding UI top area)
-  let targetSpeed = mouseIsPressed && mouseY > 100 ? 0.02 : 0.005;
+  let targetSpeed = mouseIsPressed && mouseY > 100 ? 0.03 : 0.005;
   centerRotationSpeed = lerp(centerRotationSpeed, targetSpeed, 0.1);
 
   pop();
@@ -147,7 +142,6 @@ class SpaceDust {
   }
   update() {
     this.pos.add(this.vel);
-    // Boundary check using responsive maxDiameter
     if (this.pos.mag() > maxDiameter / 2) this.pos.mult(-0.9);
   }
   display() {
@@ -156,47 +150,35 @@ class SpaceDust {
   }
 }
 
-function drawDynamicLines() {
-  let numLines = 24;
-
+function drawRadarLines() {
+  let numLines = 12; // Fewer, thicker lines for "Factory" look
   let r = 255;
   let g = constrain(255 - flashIntensity * 2, 0, 255);
   let b = constrain(255 - flashIntensity * 2, 0, 255);
 
-  noFill();
-  stroke(r, g, b, 100);
-  strokeWeight(2);
-  // Uses dynamic orbitRadius
-  circle(0, 0, orbitRadius * 2);
-
-  let breathe = sin(frameCount * 0.05) * 20;
-  // Dynamic length based on responsive orbitRadius
-  let currentLen = orbitRadius + 40 + breathe + flashIntensity * 0.2;
-  let twoPiDivNum = TWO_PI / numLines;
-
+  let breathe = sin(frameCount * 0.05) * 15;
+  
   for (let i = 0; i < numLines; i++) {
-    let currentAngle = angle + twoPiDivNum * i;
-    let breatheLocal = sin(frameCount * 0.05 + i) * 20;
+    // Rotating lines
+    let currentAngle = angle + (TWO_PI / numLines) * i;
     
-    // Calculate length relative to responsive orbitRadius
-    let localLen = orbitRadius + 40 + breatheLocal + flashIntensity * 0.2;
+    // Varying lengths
+    let lenMod = (i % 2 === 0) ? 1.0 : 0.7;
+    let localLen = (orbitRadius + 20 + breathe) * lenMod;
 
-    let ca = cos(currentAngle);
-    let sa = sin(currentAngle);
+    let xStart = cos(currentAngle) * 50;
+    let yStart = sin(currentAngle) * 50;
+    let xEnd = cos(currentAngle) * localLen;
+    let yEnd = sin(currentAngle) * localLen;
 
-    // Start slightly outside the center hub (fixed 60 is fine as hub is fixed size)
-    let xStart = ca * 60;
-    let xEnd = ca * localLen;
-    let yStart = sa * 60;
-    let yEnd = sa * localLen;
-
-    stroke(r, g, b, 200);
-    strokeWeight(2);
+    stroke(r, g, b, 150);
+    strokeWeight(1.5);
     line(xStart, yStart, xEnd, yEnd);
 
+    // End caps
     noStroke();
-    fill(r, g, b, 255);
-    circle(xEnd, yEnd, 4);
+    fill(r, 0, 0, 200);
+    circle(xEnd, yEnd, 5);
   }
 }
 
@@ -206,87 +188,83 @@ function drawCenterHub() {
   noFill();
   stroke(centerCol, 200);
   strokeWeight(2);
-  circle(0, 0, 110);
+  
+  // Pulsing rings
+  let pulse = sin(frameCount * 0.1) * 5;
+  circle(0, 0, 100 + pulse);
+  circle(0, 0, 80 - pulse);
 
-  stroke(centerCol, 150);
-  strokeWeight(5);
+  stroke(255, 0, 0, 150);
+  strokeWeight(4);
   circle(0, 0, 50);
 
   noStroke();
   fill(255, 0, 0, 200 + flashIntensity);
-  circle(0, 0, 15);
+  circle(0, 0, 20);
 }
 
-class FloatingBubble {
+class OrbitingBubble {
   constructor() {
-    let ang = random(TWO_PI);
-    // Ensure bubbles spawn within screen limits
-    let spawnLimit = maxDiameter / 1.6;
-    let rad = random(120, spawnLimit);
-    this.pos = createVector(cos(ang) * rad, sin(ang) * rad);
-    this.vel = p5.Vector.random2D().mult(random(0.2, 0.8));
-    this.size = random(5, 20);
+    this.angle = random(TWO_PI);
+    this.dist = random(120, maxDiameter/1.5);
+    this.speed = random(0.002, 0.008) * (random() > 0.5 ? 1 : -1);
+    this.size = random(4, 15);
     this.baseAlpha = random(50, 200);
     this.hitTimer = 0;
+    
+    // Position vector for collision math
+    this.pos = createVector(0,0);
+    this.updatePos();
+  }
+
+  updatePos() {
+    this.pos.x = cos(this.angle) * this.dist;
+    this.pos.y = sin(this.angle) * this.dist;
   }
 
   update() {
-    this.pos.add(this.vel);
-
-    // RESPONSIVE BOUNDARY (BOUNCE)
-    // Updates automatically as width/height changes
-    let halfW = width * 0.5 - this.size;
-    let halfH = height * 0.5 - this.size;
-
-    if (this.pos.x > halfW) {
-      this.pos.x = halfW;
-      this.vel.x *= -1;
-    } else if (this.pos.x < -halfW) {
-      this.pos.x = -halfW;
-      this.vel.x *= -1;
-    }
-
-    if (this.pos.y > halfH) {
-      this.pos.y = halfH;
-      this.vel.y *= -1;
-    } else if (this.pos.y < -halfH) {
-      this.pos.y = -halfH;
-      this.vel.y *= -1;
-    }
-
+    this.angle += this.speed;
+    
+    // Slight oscillation in distance
+    this.dist += sin(frameCount * 0.01 + this.angle) * 0.5;
+    
+    this.updatePos();
     if (this.hitTimer > 0) this.hitTimer -= 2;
   }
 
   checkRippleCollision(ripplesArr) {
     if (ripplesArr.length === 0) return;
-
-    let dFromCenter = this.pos.mag();
+    let dFromCenter = this.dist; 
 
     for (let r of ripplesArr) {
-      let rippleRadius = r.radius;
-      if (abs(dFromCenter - rippleRadius) < this.size / 2 + r.w + 5) {
+      if (abs(dFromCenter - r.radius) < this.size / 2 + r.w + 5) {
         this.hitTimer = 90;
       }
     }
   }
 
   display() {
+
     if (this.hitTimer > 0) {
-      fill(255, 0, 0, 100);
-      circle(this.pos.x, this.pos.y, this.size * 2);
+      stroke(255, 0, 0, this.hitTimer * 2); // Fade out line
+      strokeWeight(1);
+      line(0, 0, this.pos.x, this.pos.y);
+      
       fill(255, 0, 0);
+      noStroke();
+      // Bubble expands when hit
+      circle(this.pos.x, this.pos.y, this.size * 2); 
     } else {
       fill(255, this.baseAlpha);
+      noStroke();
+      circle(this.pos.x, this.pos.y, this.size);
     }
-    noStroke();
-    circle(this.pos.x, this.pos.y, this.size);
   }
 }
 
 function manageRipples() {
   let spawnRate = 60;
   let speed = 8;
-  // UI Hover check
   let isHoverUI = mouseX < 150 && mouseY < 100;
 
   if (mouseIsPressed && !isHoverUI) {
@@ -309,17 +287,22 @@ function manageRipples() {
   }
 }
 
-function drawOrbitTracks() {
+function drawConcentricTracks() {
   noFill();
   strokeWeight(1);
-  stroke(255, 15);
-  // Scale tracks based on orbitRadius logic to maintain proportions
+  stroke(255, 20); // Very faint
+  
   let scaleFactor = orbitRadius / 300; 
   
-  for (let layer = 1; layer <= 8; layer++) {
-    // Adjusted formulation to scale with the main orbit
-    let radius = (layer * 45 + 50) * 3.5 * scaleFactor;
-    circle(0, 0, radius);
+  // Draw static orbital tracks to emphasize the circular motion
+  for (let layer = 1; layer <= 6; layer++) {
+    let radius = (layer * 60 + 50) * scaleFactor;
+    // Dashed lines manually
+    for(let a = 0; a < TWO_PI; a+=0.1) {
+        if(floor(a * 10) % 2 == 0) {
+            arc(0,0, radius*2, radius*2, a, a+0.05);
+        }
+    }
   }
 }
 
@@ -342,11 +325,19 @@ class Ripple {
     stroke(255, this.a);
     strokeWeight(this.w);
     circle(0, 0, this.d);
+    
+    // Double Ring Effect for "Difference"
+    stroke(255, this.a * 0.5);
+    circle(0, 0, this.d - 20);
   }
   isFinished() {
     return this.a <= 0;
   }
 }
+
+// ==========================================
+//             UI LOGIC (UNCHANGED)
+// ==========================================
 
 function handleUIInteraction() {
   if (
@@ -441,8 +432,6 @@ function drawUI() {
   if (isHoverInfo) {
     let tooltipX = mouseX + 15;
     let tooltipY = mouseY + 15;
-    
-    // Ensure tooltip doesn't go off screen on mobile
     if (tooltipX + 220 > width) {
         tooltipX = width - 230;
     }
@@ -461,7 +450,7 @@ function drawUI() {
     fill(200);
     textLeading(18);
     text(
-      "- Click and Hold: create ripples.\n- Ripples hit particles -> RED.",
+      "- Particles now ORBIT the center.\n- Hit particles connect to center.",
       tooltipX + 10,
       tooltipY + 30
     );
